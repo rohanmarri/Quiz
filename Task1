@@ -1,1 +1,82 @@
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import mean_squared_error
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, Dropout, Dense
+import matplotlib.pyplot as plt
+
+# Load the dataset (replace 'your_dataset.csv' with the actual file path)
+dataset = pd.read_csv('your_dataset.csv')
+
+# Assuming the dataset has a 'timestamp' column for time series data and a 'target' column for the variable to predict
+timestamp_column = 'timestamp'
+target_column = 'target'
+
+# Preprocessing: Convert timestamp column to datetime format
+dataset[timestamp_column] = pd.to_datetime(dataset[timestamp_column])
+
+# Sorting the dataset by timestamp (if not already sorted)
+dataset.sort_values(by=[timestamp_column], inplace=True)
+
+# Normalization: Scale numerical features to a range (0, 1)
+scaler = MinMaxScaler()
+dataset[[target_column]] = scaler.fit_transform(dataset[[target_column]])
+
+# Splitting into training and test sets
+train_size = int(len(dataset) * 0.8)
+train_data, test_data = dataset[:train_size], dataset[train_size:]
+
+# Convert the time series data into sequences suitable for LSTM
+def create_sequences(data, sequence_length):
+    X, y = [], []
+    for i in range(len(data) - sequence_length):
+        X.append(data[i:i+sequence_length])
+        y.append(data[i+sequence_length])
+    return np.array(X), np.array(y)
+
+sequence_length = 10
+X_train, y_train = create_sequences(train_data[target_column], sequence_length)
+X_test, y_test = create_sequences(test_data[target_column], sequence_length)
+
+# Designing the LSTM model architecture
+model = Sequential([
+    LSTM(units=50, return_sequences=True, input_shape=(sequence_length, 1)),
+    Dropout(0.2),
+    LSTM(units=50),
+    Dropout(0.2),
+    Dense(units=1)
+])
+
+# Compiling the model
+model.compile(optimizer='adam', loss='mean_squared_error')
+
+# Training the model
+history = model.fit(X_train, y_train, epochs=100, batch_size=32, validation_split=0.1)
+
+# Plot training and validation loss
+plt.plot(history.history['loss'], label='Training Loss')
+plt.plot(history.history['val_loss'], label='Validation Loss')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.legend()
+plt.show()
+
+# Model evaluation
+predicted_values = model.predict(X_test)
+predicted_values = scaler.inverse_transform(predicted_values)
+y_test = scaler.inverse_transform(y_test.reshape(-1, 1))
+
+# Calculate evaluation metrics
+mse = mean_squared_error(y_test, predicted_values)
+rmse = np.sqrt(mse)
+print("Root Mean Squared Error (RMSE):", rmse)
+
+# Visualization of predictions
+plt.plot(y_test, label='Actual')
+plt.plot(predicted_values, label='Predicted')
+plt.xlabel('Time')
+plt.ylabel('Value')
+plt.legend()
+plt.show()
 
