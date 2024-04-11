@@ -1,1 +1,36 @@
+import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import train_test_split
+
+# Load the dataset (replace 'your_dataset.csv' with the actual file path)
+dataset = pd.read_csv('your_dataset.csv')
+
+# Assuming the dataset has a 'timestamp' column for time series data
+# You may need to adjust the column names based on your dataset
+# For example, if your dataset has columns like 'Date', 'Temperature', 'Stock_Price', etc.
+# then you should replace 'timestamp' with 'Date', and so on
+timestamp_column = 'timestamp'
+
+# Preprocessing: Convert timestamp column to datetime format
+dataset[timestamp_column] = pd.to_datetime(dataset[timestamp_column])
+
+# Sorting the dataset by timestamp (if not already sorted)
+dataset.sort_values(by=[timestamp_column], inplace=True)
+
+# Normalization: Scale numerical features to a range (0, 1)
+scaler = MinMaxScaler()
+dataset[['feature1', 'feature2', ...]] = scaler.fit_transform(dataset[['feature1', 'feature2', ...]])
+
+# Splitting into training and test sets
+# Assuming 80% of the data is used for training and 20% for testing
+train_size = int(len(dataset) * 0.8)
+train_data, test_data = dataset[:train_size], dataset[train_size:]
+
+# Optionally, you can save the preprocessed datasets to CSV files
+train_data.to_csv('train_data.csv', index=False)
+test_data.to_csv('test_data.csv', index=False)
+
+# Print some information about the datasets
+print("Training data shape:", train_data.shape)
+print("Test data shape:", test_data.shape)
 
