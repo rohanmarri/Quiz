@@ -1,7 +1,11 @@
 # Quiz
 
 Student Name : Marri Rohan
-700741375
+
+
+Student ID : 700741375
+
+Link to the zoom video : https://drive.google.com/file/d/1TVxslF4j6qk-9gP0K0NC2_JTcEqZZ4sN/view?usp=sharing
 
 Discussion and Analysis:
 Challenges Encountered during Model Training and Optimization:
